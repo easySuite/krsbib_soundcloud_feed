@@ -1,0 +1,4 @@
+name = KRSBIB Soundcloud feed
+description = "Displays last 3 podcasts from KRSBIB's Soundcloud feed."
+core = 7.x
+package = Bibliofil

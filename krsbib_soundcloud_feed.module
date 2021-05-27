@@ -1,0 +1,27 @@
+<?php
+
+/**
+ * @file
+ * KRSBIB Soundcloud module.
+ */
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function krsbib_soundcloud_feed_ctools_plugin_directory($owner, $plugin_type) {
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/content_types';
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function krsbib_soundcloud_feed_theme($existing, $type, $theme, $path) {
+  return [
+    'krsbib_soundcloud_feed' => [
+      'variables' => NULL,
+      'template' => 'templates/krsbib_soundcloud_feed'
+    ]
+  ];
+}
