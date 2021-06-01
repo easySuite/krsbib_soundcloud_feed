@@ -1,4 +1,6 @@
-name = KRSBIB Soundcloud feed
-description = "Displays last 3 podcasts from KRSBIB's Soundcloud feed."
+name = KRSBIB SoundCloud feed
+description = "Displays latest podcasts from KRSBIB's SoundCloud feed."
 core = 7.x
 package = Bibliofil
+dependencies[] = ctools
+version = 7.x-0.1
