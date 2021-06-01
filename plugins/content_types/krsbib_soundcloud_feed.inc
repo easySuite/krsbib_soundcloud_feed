@@ -8,7 +8,7 @@
 $plugin = [
   'single' => TRUE,
   'title' => t('KRSBIB Soundcloud Feed'),
-  'description' => t('Display last 3 podcasts from krsbib soundcloud account.'),
+  'description' => t('Display latest 3 podcasts from KRSBib soundcloud channel.'),
   'category' => t('Bibliofil'),
   'render callback' => 'krsbib_soundcloud_feed_render',
   'edit form' => 'krsbib_soundcloud_feed_edit_form',
@@ -25,20 +25,23 @@ function krsbib_soundcloud_feed_edit_form($form, &$form_state) {
  * KRSBIB soundcloud feed rendering callback.
  */
 function krsbib_soundcloud_feed_render($subtype, $conf, $args, $context) {
-  $podcasts = [];
-
-  $fetched_data = simplexml_load_file('https://feeds.soundcloud.com/users/soundcloud:users:253143255/sounds.rss');
-
-  foreach ($fetched_data->channel->item as $item) {
-    $podcasts[] = [
-      'title' => (string) $item->title,
-      'link' => (string) $item->link,
-    ];
-  }
-
-  $podcasts = array_slice($podcasts, 0, 3);
+  $theme_variables = [
+    'items' => array_map(function ($podcast) {
+      return l($podcast['title'], $podcast['link'], [
+        'absolute' => TRUE,
+      ]);
+    }, krsbib_soundcloud_feed_podcasts()),
+    'title' => '',
+    'type' => 'ul',
+    'attributes' => [
+      'class' => [
+        'menu',
+      ],
+    ],
+  ];
 
   $block = new stdClass();
-  $block->content['#markup'] = theme('krsbib_soundcloud_feed', ['content' => $podcasts]);
+  $block->content['#markup'] = theme('item_list', $theme_variables);
+
   return $block;
 }

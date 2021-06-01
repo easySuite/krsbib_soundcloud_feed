@@ -5,6 +5,8 @@
  * KRSBIB Soundcloud module.
  */
 
+define('KRSBIB_SOUNDCLOUD_FEED_CACHE_TTL', 86400);
+
 /**
  * Implements hook_ctools_plugin_directory().
  */
@@ -15,13 +17,51 @@ function krsbib_soundcloud_feed_ctools_plugin_directory($owner, $plugin_type) {
 }
 
 /**
- * Implements hook_theme().
+ * Fetches latest three podcasts from KRSbib soundcloud channel.
+ *
+ * @param int $amount
+ *   Amount of podcasts to read.
+ * @param bool $reset
+ *   Whether to forcibly fetch from feed.
+ *
+ * @return array
+ *   An array of podcasts, keyed by:
+ *   - title: Podcast title
+ *   - link: podcast external url
  */
-function krsbib_soundcloud_feed_theme($existing, $type, $theme, $path) {
-  return [
-    'krsbib_soundcloud_feed' => [
-      'variables' => NULL,
-      'template' => 'templates/krsbib_soundcloud_feed'
-    ]
-  ];
+function krsbib_soundcloud_feed_podcasts($amount = 3, $reset = FALSE) {
+  $podcasts = [];
+
+  $cid = 'krsbib_soundcloud_feed';
+  $cached_data = cache_get($cid);
+  if ($reset || !$cached_data || empty($cached_data->data) || $cached_data->expire < REQUEST_TIME) {
+    $soundcloud_data = simplexml_load_file('https://feeds.soundcloud.com/users/soundcloud:users:253143255/sounds.rss');
+    $soundcloud_podcasts = $soundcloud_data->xpath("//rss/channel/item[position()<=${amount}]");
+    foreach ($soundcloud_podcasts as $item) {
+      $podcasts[] = [
+        'title' => (string) $item->title,
+        'link' => (string) $item->link,
+      ];
+    }
+
+    if ($podcasts) {
+      $expires = REQUEST_TIME + KRSBIB_SOUNDCLOUD_FEED_CACHE_TTL;
+      cache_set($cid, $podcasts, 'cache', $expires);
+
+      watchdog('krsbib_soundcloud_feed', 'Cache write at @time, expires @expires.', [
+        '@time' => REQUEST_TIME,
+        '@expires' => $expires,
+      ], WATCHDOG_DEBUG);
+    }
+  }
+  else {
+    $podcasts = $cached_data->data;
+
+    watchdog('krsbib_soundcloud_feed', 'Cache hit, expires @expires.', [
+      '@time' => REQUEST_TIME,
+      '@expires' => $cached_data->expire,
+    ], WATCHDOG_DEBUG);
+  }
+
+  return array_slice($podcasts, 0, $amount);
 }
