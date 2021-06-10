@@ -3,4 +3,4 @@ description = "Displays latest podcasts from KRSBIB's SoundCloud feed."
 core = 7.x
 package = Bibliofil
 dependencies[] = ctools
-version = 7.x-0.1
+release = 7.x-6.2.1
